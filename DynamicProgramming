@@ -1,9 +1,9 @@
 # ----------
 # User Instructions:
-# 
+#
 # Create a function compute_value which returns
 # a grid of values. The value of a cell is the minimum
-# number of moves required to get from the cell to the goal. 
+# number of moves required to get from the cell to the goal.
 #
 # If a cell is a wall or it is impossible to reach the goal from a cell,
 # assign that cell a value of 99.
@@ -24,12 +24,13 @@ delta = [[-1, 0 ], # go up
 
 delta_name = ['^', '<', 'v', '>']
 
-def compute_value(grid,goal,cost):
+def optimum_policy(grid,goal,cost):
     # ----------------------------------------
     # insert code below
     # ----------------------------------------
     value = [[99 for col in range(len(grid[0]))] for row in range(len(grid))]
     closed = [[0 for col in range(len(grid[0]))] for row in range(len(grid))]
+    policy = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
 
     # initialise value and closed grids
     for j in range(len(grid[0])): #col
@@ -37,11 +38,11 @@ def compute_value(grid,goal,cost):
             if grid[i][j] == 1:
                 value[i][j] = 99
                 closed[i][j] = 1
-    
+
     closed[goal[0]][goal[1]]=1
     open_list = []
     open_list.append([0,goal[0],goal[1]])
-    
+
     while len(open_list)>0:
         current_cell = open_list.pop()
 
@@ -57,26 +58,45 @@ def compute_value(grid,goal,cost):
                         next_cell[0] = current_cell[0]+cost
                         #print(next_cell)
                         open_list.append(next_cell)
-                        
+
                     else:
                         # update cell value
                         candidate_values.append(value[next_cell[1]][next_cell[2]])
-                        
+
         #print ('candidates')
         #print (candidate_values)
         value[current_cell[1]][current_cell[2]] = min(candidate_values)+cost
         #closed[next_cell[1]][next_cell[2]]=1;
         closed[current_cell[1]][current_cell[2]]=1;
-    
-        
-    # make sure your function returns a grid of values as 
+
+
+    # make sure your function returns a grid of values as
     # demonstrated in the previous video.
     #print ('closed')
     #for a_row in closed:
     #    print (a_row)
-    return value 
 
-value = compute_value(grid,goal,cost)
+    # at this point we have the value grid
+    # now we can compute the policy
+    
+    for x in range(len(grid)):
+        for y in range(len(grid[0])):
+            options = []
+            for a in range(len(delta)):
+                x2 = x + delta[a][0]
+                y2 = y + delta[a][1]
+                if x2 >= 0 and x2 < len(grid) and y2 >= 0 and y2 < len(grid[0]):
+                    options.append([value[x2][y2],a])
+            options.sort()
+            min_index = options[0][1]
+            if value[x][y] != 99:
+                policy[x][y]=delta_name[min_index]
+
+    policy[goal[0]][goal[1]] = '*'
+
+    return policy
+
+policy = optimum_policy(grid,goal,cost)
 #print ('value:')
-for a_row in value:
+for a_row in policy:
     print (a_row)
